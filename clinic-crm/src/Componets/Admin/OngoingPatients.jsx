@@ -14,7 +14,7 @@ const OngoingPatients = () => {
   const navigate = useNavigate();
 
   const fetchPatients = async () => {
-    const res = await fetch(`ttps://dental-crm-backend-8crf.onrender.com
+    const res = await fetch(`https://dental-crm-backend-8crf.onrender.com
 /treatment-cases`)
     const data = await res.json();
     setPatients(data.cases || []);

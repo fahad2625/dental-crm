@@ -15,7 +15,7 @@ const Admin = () => {
 
   // Fetch appointments
   useEffect(() => {
-    fetch(`ttps://dental-crm-backend-8crf.onrender.com
+    fetch(`https://dental-crm-backend-8crf.onrender.com
 /appointments`)
       .then((res) => res.json())
       .then((data) => {
