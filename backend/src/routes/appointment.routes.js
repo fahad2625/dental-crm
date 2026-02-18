@@ -2,7 +2,7 @@ import express from "express";
 import Appointment from "../models/Appointment.model.js";
 import fetch from "node-fetch";
 
-const N8N_WEBHOOK = "http://localhost:5678/webhook-test/dental-appointment";
+// const N8N_WEBHOOK = "http://localhost:5678/webhook-test/dental-appointment";
 // later change to production URL
 
 const router = express.Router();
@@ -17,19 +17,19 @@ router.post("/", async (req, res) => {
     console.log("✅ Appointment saved to DB");
 
     // 🔥 Trigger n8n automation
-    await fetch(N8N_WEBHOOK, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user: appointment.name,
-        phone: "91" + appointment.phone,
+    // await fetch(N8N_WEBHOOK, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     user: appointment.name,
+    //     phone: "91" + appointment.phone,
 
-        clinic: appointment.clinic,
-        type: "appointment",
-        date: appointment.date,
-        time: appointment.time
-      }),
-    });
+    //     clinic: appointment.clinic,
+    //     type: "appointment",
+    //     date: appointment.date,
+    //     time: appointment.time
+    //   }),
+    // });
 
     res.status(201).json({
       success: true,
