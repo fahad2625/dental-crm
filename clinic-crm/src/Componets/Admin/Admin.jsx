@@ -15,7 +15,8 @@ const Admin = () => {
 
   // Fetch appointments
   useEffect(() => {
-    fetch("http://localhost:5000/appointments")
+    fetch(`ttps://dental-crm-backend-8crf.onrender.com
+/appointments`)
       .then((res) => res.json())
       .then((data) => {
         const now = new Date();
@@ -52,7 +53,8 @@ const Admin = () => {
   const updateStatus = async (id, status) => {
     try {
       await fetch(
-        `http://localhost:5000/appointments/${id}/status`,
+        `https://dental-crm-backend-8crf.onrender.com
+/appointments/${id}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -79,7 +81,8 @@ const Admin = () => {
     if (!ok) return;
 
     await fetch(
-      `http://localhost:5000/appointments/${id}`,
+      `https://dental-crm-backend-8crf.onrender.com
+/appointments/${id}`,
       { method: "DELETE" }
     );
 
@@ -239,7 +242,8 @@ const Admin = () => {
               <button
                 onClick={async () => {
                   await fetch(
-                    `http://localhost:5000/appointments/${selectedAppointment._id}/status`,
+                    `https://dental-crm-backend-8crf.onrender.com
+/appointments/${selectedAppointment._id}/status`,
                     {
                       method: "PATCH",
                       headers: {

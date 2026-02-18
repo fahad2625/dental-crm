@@ -47,7 +47,8 @@ const Appointment = () => {
 
   if (Object.keys(validationErrors).length === 0) {
     try {
-      await fetch("http://localhost:5000/appointments", {
+      await fetch(`https://dental-crm-backend-8crf.onrender.com
+/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

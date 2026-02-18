@@ -14,7 +14,8 @@ const OngoingPatients = () => {
   const navigate = useNavigate();
 
   const fetchPatients = async () => {
-    const res = await fetch("http://localhost:5000/treatment-cases");
+    const res = await fetch(`ttps://dental-crm-backend-8crf.onrender.com
+/treatment-cases`)
     const data = await res.json();
     setPatients(data.cases || []);
   };
@@ -26,7 +27,8 @@ const OngoingPatients = () => {
   const addPatient = async () => {
     if (!patientName || !phone || !startDate || !totalAmount) return;
 
-    await fetch("http://localhost:5000/treatment-cases", {
+    await fetch(`https://dental-crm-backend-8crf.onrender.com
+/treatment-cases`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

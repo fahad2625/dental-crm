@@ -23,21 +23,24 @@ const PatientDetails = () => {
 
   /* ---------------- FETCH PAYMENTS ---------------- */
   const fetchPayments = async () => {
-    const res = await fetch(`http://localhost:5000/payments/${caseId}`);
+    const res = await fetch(`https://dental-crm-backend-8crf.onrender.com
+/payments/${caseId}`);
     const data = await res.json();
     if (data.success) setPayments(data.payments);
   };
 
   /* ---------------- FETCH VISITS ---------------- */
   const fetchVisits = async () => {
-    const res = await fetch(`http://localhost:5000/visits/${caseId}`);
+    const res = await fetch(`https://dental-crm-backend-8crf.onrender.com
+/visits/${caseId}`);
     const data = await res.json();
     if (data.success) setVisits(data.visits);
   };
 
   /* ---------------- FETCH PATIENT ---------------- */
   useEffect(() => {
-    fetch(`http://localhost:5000/treatment-cases/${caseId}`)
+    fetch(`https://dental-crm-backend-8crf.onrender.com
+/treatment-cases/${caseId}`)
       .then((res) => res.json())
       .then((data) => {
         setPatient(data.treatment);
@@ -58,7 +61,8 @@ const PatientDetails = () => {
 
     setSaving(true);
 
-    await fetch(`http://localhost:5000/treatment-cases/${caseId}/next-visit`, {
+    await fetch(`https://dental-crm-backend-8crf.onrender.com
+/treatment-cases/${caseId}/next-visit`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nextVisitDate: nextVisit }),
@@ -71,7 +75,8 @@ const PatientDetails = () => {
   const addPayment = async () => {
     if (!amount) return;
 
-    await fetch("http://localhost:5000/payments", {
+    await fetch(`https://dental-crm-backend-8crf.onrender.com
+/payments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -94,7 +99,8 @@ const PatientDetails = () => {
   if (!ok) return;
 
   await fetch(
-    `http://localhost:5000/payments/${paymentId}`,
+    `https://dental-crm-backend-8crf.onrender.com
+/payments/${paymentId}`,
     { method: "DELETE" }
   );
 
@@ -106,7 +112,8 @@ const PatientDetails = () => {
   const addVisit = async () => {
     if (!visitNote) return;
 
-    await fetch("http://localhost:5000/visits", {
+    await fetch(`https://dental-crm-backend-8crf.onrender.com
+/visits`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -125,7 +132,8 @@ const PatientDetails = () => {
     const ok = window.confirm("Delete this visit note?");
     if (!ok) return;
 
-    await fetch(`http://localhost:5000/visits/${visitId}`, {
+    await fetch(`https://dental-crm-backend-8crf.onrender.com
+/visits/${visitId}`, {
       method: "DELETE",
     });
 
