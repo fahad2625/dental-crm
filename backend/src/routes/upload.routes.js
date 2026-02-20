@@ -1,14 +1,21 @@
 import express from "express";
-import TreatmentCase from "../models/TreatmentCase.model.js";
 import multer from "multer";
+import fs from "fs";
+import path from "path";
+import TreatmentCase from "../models/TreatmentCase.model.js";
 
 const router = express.Router();
 
-/* STORAGE CONFIG */
+/* ---------- Ensure uploads folder exists ---------- */
+const uploadDir = path.join(process.cwd(), "uploads");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+/* ---------- Multer storage ---------- */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
+  destination: uploadDir,
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   },
@@ -16,9 +23,18 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-/* UPLOAD XRAY / REPORT */
+/* ---------- Upload Route ---------- */
 router.post("/treatment/:caseId", upload.single("file"), async (req, res) => {
   try {
+    console.log("Upload request received");
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
     const treatment = await TreatmentCase.findById(req.params.caseId);
 
     if (!treatment) {
@@ -26,6 +42,11 @@ router.post("/treatment/:caseId", upload.single("file"), async (req, res) => {
         success: false,
         message: "Treatment case not found",
       });
+    }
+
+    // ensure files array exists
+    if (!treatment.files) {
+      treatment.files = [];
     }
 
     treatment.files.push({
@@ -39,8 +60,11 @@ router.post("/treatment/:caseId", upload.single("file"), async (req, res) => {
     res.json({ success: true });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
+    console.error("UPLOAD ERROR:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
