@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
+const API = "https://dental-crm-backend-8crf.onrender.com";
+
 const PatientDetails = () => {
   const { caseId } = useParams();
   const navigate = useNavigate();
@@ -21,38 +23,42 @@ const PatientDetails = () => {
   const [visits, setVisits] = useState([]);
   const [visitNote, setVisitNote] = useState("");
 
+  // ⭐ FILE UPLOAD
+  const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  /* ---------------- FETCH PATIENT ---------------- */
+  const fetchPatient = async () => {
+    const res = await fetch(`${API}/treatment-cases/${caseId}`);
+    const data = await res.json();
+
+    if (data.success) {
+      setPatient(data.treatment);
+
+      if (data.treatment?.nextVisitDate) {
+        setNextVisit(data.treatment.nextVisitDate.slice(0, 10));
+      }
+    }
+  };
+
   /* ---------------- FETCH PAYMENTS ---------------- */
   const fetchPayments = async () => {
-    const res = await fetch(`https://dental-crm-backend-8crf.onrender.com
-/payments/${caseId}`);
+    const res = await fetch(`${API}/payments/${caseId}`);
     const data = await res.json();
     if (data.success) setPayments(data.payments);
   };
 
   /* ---------------- FETCH VISITS ---------------- */
   const fetchVisits = async () => {
-    const res = await fetch(`https://dental-crm-backend-8crf.onrender.com
-/visits/${caseId}`);
+    const res = await fetch(`${API}/visits/${caseId}`);
     const data = await res.json();
     if (data.success) setVisits(data.visits);
   };
 
-  /* ---------------- FETCH PATIENT ---------------- */
   useEffect(() => {
-    fetch(`https://dental-crm-backend-8crf.onrender.com
-/treatment-cases/${caseId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPatient(data.treatment);
-
-        if (data.treatment?.nextVisitDate) {
-          setNextVisit(data.treatment.nextVisitDate.slice(0, 10));
-        }
-
-        fetchPayments();
-        fetchVisits();
-      })
-      .catch(() => setError("Failed to load patient"));
+    fetchPatient();
+    fetchPayments();
+    fetchVisits();
   }, [caseId]);
 
   /* ---------------- SAVE NEXT VISIT ---------------- */
@@ -61,22 +67,21 @@ const PatientDetails = () => {
 
     setSaving(true);
 
-    await fetch(`https://dental-crm-backend-8crf.onrender.com
-/treatment-cases/${caseId}/next-visit`, {
+    await fetch(`${API}/treatment-cases/${caseId}/next-visit`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nextVisitDate: nextVisit }),
     });
 
     setSaving(false);
+    fetchPatient();
   };
 
   /* ---------------- ADD PAYMENT ---------------- */
   const addPayment = async () => {
     if (!amount) return;
 
-    await fetch(`https://dental-crm-backend-8crf.onrender.com
-/payments`, {
+    await fetch(`${API}/payments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -88,32 +93,21 @@ const PatientDetails = () => {
     });
 
     setAmount("");
-    setMethod("cash");
     fetchPayments();
   };
 
-
-
   const deletePayment = async (paymentId) => {
-  const ok = window.confirm("Delete this payment?");
-  if (!ok) return;
+    if (!window.confirm("Delete this payment?")) return;
 
-  await fetch(
-    `https://dental-crm-backend-8crf.onrender.com
-/payments/${paymentId}`,
-    { method: "DELETE" }
-  );
-
-  fetchPayments();
-};
-
+    await fetch(`${API}/payments/${paymentId}`, { method: "DELETE" });
+    fetchPayments();
+  };
 
   /* ---------------- ADD VISIT ---------------- */
   const addVisit = async () => {
     if (!visitNote) return;
 
-    await fetch(`https://dental-crm-backend-8crf.onrender.com
-/visits`, {
+    await fetch(`${API}/visits`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -127,22 +121,44 @@ const PatientDetails = () => {
     fetchVisits();
   };
 
-  /* ---------------- DELETE VISIT ---------------- */
   const deleteVisit = async (visitId) => {
-    const ok = window.confirm("Delete this visit note?");
-    if (!ok) return;
+    if (!window.confirm("Delete this visit note?")) return;
 
-    await fetch(`https://dental-crm-backend-8crf.onrender.com
-/visits/${visitId}`, {
-      method: "DELETE",
-    });
-
+    await fetch(`${API}/visits/${visitId}`, { method: "DELETE" });
     fetchVisits();
+  };
+
+  /* ---------------- ⭐ UPLOAD XRAY ---------------- */
+  const uploadFile = async () => {
+    if (!file) return alert("Select a file first");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setUploading(true);
+
+      const res = await fetch(`${API}/upload/treatment/${caseId}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("File uploaded successfully");
+        setFile(null);
+        fetchPatient(); // refresh to show file
+      }
+    } catch {
+      alert("Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   /* ---------------- FINANCIAL LOGIC ---------------- */
   const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-
   const totalAmount = patient?.totalAmount || 0;
   const pendingBalance = totalAmount - totalPaid;
 
@@ -171,24 +187,15 @@ const PatientDetails = () => {
 
       {/* PATIENT INFO */}
       <div className="bg-white border rounded p-4 space-y-2">
-        <p>
-          <b>Phone:</b> {patient.phone}
-        </p>
-        <p>
-          <b>Treatment:</b> {patient.treatmentType}
-        </p>
-        <p>
-          <b>Status:</b> {patient.status}
-        </p>
-        <p>
-          <b>Start Date:</b> {new Date(patient.startDate).toLocaleDateString()}
-        </p>
+        <p><b>Phone:</b> {patient.phone}</p>
+        <p><b>Treatment:</b> {patient.treatmentType}</p>
+        <p><b>Status:</b> {patient.status}</p>
+        <p><b>Start Date:</b> {new Date(patient.startDate).toLocaleDateString()}</p>
       </div>
 
       {/* NEXT VISIT */}
       <div className="bg-white border rounded p-4 mt-6">
         <h3 className="font-semibold mb-2">Next Visit</h3>
-
         <div className="flex gap-3 items-center">
           <input
             type="date"
@@ -196,7 +203,6 @@ const PatientDetails = () => {
             onChange={(e) => setNextVisit(e.target.value)}
             className="border px-3 py-2 rounded"
           />
-
           <button
             onClick={saveNextVisit}
             disabled={saving}
@@ -210,16 +216,9 @@ const PatientDetails = () => {
       {/* FINANCIAL SUMMARY */}
       <div className="bg-white border rounded p-4 mt-6">
         <h3 className="font-semibold mb-3">Financial Summary</h3>
-
-        <p>
-          <b>Total Treatment Amount:</b> ₹{totalAmount}
-        </p>
-        <p>
-          <b>Total Paid:</b> ₹{totalPaid}
-        </p>
-
+        <p><b>Total Treatment Amount:</b> ₹{totalAmount}</p>
+        <p><b>Total Paid:</b> ₹{totalPaid}</p>
         <p className="font-semibold">Pending Balance: ₹{pendingBalance}</p>
-
         <p className={`font-medium ${statusColor}`}>Status: {statusText}</p>
       </div>
 
@@ -265,29 +264,25 @@ const PatientDetails = () => {
                 <th className="p-2 text-left">Amount</th>
                 <th className="p-2 text-left">Method</th>
                 <th className="p-2 text-left">Action</th>
-
               </tr>
             </thead>
-           <tbody>
-  {payments.map((p) => (
-    <tr key={p._id} className="border-t">
-      <td className="p-2">
-        {new Date(p.paidAt).toLocaleDateString()}
-      </td>
-      <td className="p-2">₹{p.amount}</td>
-      <td className="p-2">{p.method}</td>
-      <td className="p-2">
-        <button
-          onClick={() => deletePayment(p._id)}
-          className="text-red-600 text-sm"
-        >
-          Delete
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+            <tbody>
+              {payments.map((p) => (
+                <tr key={p._id} className="border-t">
+                  <td className="p-2">{new Date(p.paidAt).toLocaleDateString()}</td>
+                  <td className="p-2">₹{p.amount}</td>
+                  <td className="p-2">{p.method}</td>
+                  <td className="p-2">
+                    <button
+                      onClick={() => deletePayment(p._id)}
+                      className="text-red-600 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         )}
       </div>
@@ -296,45 +291,72 @@ const PatientDetails = () => {
       <div className="bg-white border rounded p-4 mt-6">
         <h3 className="font-semibold mb-3">Visit History</h3>
 
-        <div className="mb-4">
-          <textarea
-            placeholder="Doctor notes for this visit..."
-            value={visitNote}
-            onChange={(e) => setVisitNote(e.target.value)}
-            className="border w-full p-2 rounded mb-2"
-            rows={3}
+        <textarea
+          placeholder="Doctor notes for this visit..."
+          value={visitNote}
+          onChange={(e) => setVisitNote(e.target.value)}
+          className="border w-full p-2 rounded mb-2"
+          rows={3}
+        />
+
+        <button
+          onClick={addVisit}
+          className="px-4 py-2 bg-indigo-600 text-white rounded"
+        >
+          Add Visit
+        </button>
+
+        <div className="space-y-3 mt-4">
+          {visits.map((v) => (
+            <div key={v._id} className="border rounded p-3 flex justify-between">
+              <div>
+                <p className="text-sm text-gray-500">
+                  {new Date(v.visitDate).toLocaleDateString()}
+                </p>
+                <p>{v.notes}</p>
+              </div>
+
+              <button
+                onClick={() => deleteVisit(v._id)}
+                className="text-red-600 text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ⭐ XRAY / FILE UPLOAD */}
+      <div className="bg-white border rounded p-4 mt-6">
+        <h3 className="font-semibold mb-3">X-ray / Reports</h3>
+
+        <div className="flex gap-3 items-center mb-4">
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files[0])}
+            className="border p-2 rounded"
           />
 
           <button
-            onClick={addVisit}
-            className="px-4 py-2 bg-indigo-600 text-white rounded"
+            onClick={uploadFile}
+            disabled={uploading}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
           >
-            Add Visit
+            {uploading ? "Uploading..." : "Upload"}
           </button>
         </div>
 
-        {visits.length === 0 ? (
-          <p className="text-sm text-gray-500">No visits recorded yet</p>
+        {!patient?.files?.length ? (
+          <p className="text-sm text-gray-500">No files uploaded yet</p>
         ) : (
-          <div className="space-y-3">
-            {visits.map((v) => (
-              <div
-                key={v._id}
-                className="border rounded p-3 flex justify-between gap-4"
-              >
-                <div>
-                  <p className="text-sm text-gray-500">
-                    {new Date(v.visitDate).toLocaleDateString()}
-                  </p>
-                  <p>{v.notes}</p>
-                </div>
-
-                <button
-                  onClick={() => deleteVisit(v._id)}
-                  className="text-red-600 text-sm"
-                >
-                  Delete
-                </button>
+          <div className="space-y-2">
+            {patient.files.map((f, i) => (
+              <div key={i} className="flex justify-between border p-2 rounded">
+                <span className="text-sm">{f.fileName || "File"}</span>
+                <a href={f.fileUrl} target="_blank" className="text-blue-600 text-sm">
+                  View
+                </a>
               </div>
             ))}
           </div>

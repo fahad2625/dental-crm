@@ -4,14 +4,11 @@ import TreatmentCase from "../models/TreatmentCase.model.js";
 const router = express.Router();
 
 /**
- * Create a new treatment case
+ * CREATE TREATMENT CASE
  */
 router.post("/", async (req, res) => {
   try {
-    const treatmentCase = new TreatmentCase(req.body);
-    await treatmentCase.save();
-
-    console.log("🦷 Treatment case created");
+    const treatmentCase = await TreatmentCase.create(req.body);
 
     res.status(201).json({
       success: true,
@@ -24,7 +21,7 @@ router.post("/", async (req, res) => {
 });
 
 /**
- * GET all ongoing treatment cases
+ * GET ALL ACTIVE CASES
  */
 router.get("/", async (req, res) => {
   try {
@@ -33,18 +30,14 @@ router.get("/", async (req, res) => {
       status: "active",
     }).sort({ createdAt: -1 });
 
-    res.status(200).json({
-      success: true,
-      cases,
-    });
+    res.json({ success: true, cases });
   } catch (error) {
-    console.error("❌ Error fetching treatment cases:", error);
     res.status(500).json({ success: false });
   }
 });
 
 /**
- * GET single treatment case by ID
+ * GET SINGLE CASE
  */
 router.get("/:id", async (req, res) => {
   try {
@@ -54,47 +47,15 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ success: false });
     }
 
-    res.status(200).json({
-      success: true,
-      treatment,
-    });
-  } catch (error) {
-    console.error("❌ Error fetching treatment case:", error);
+    res.json({ success: true, treatment });
+  } catch {
     res.status(500).json({ success: false });
   }
 });
 
-
-router.post("/", async (req, res) => {
-  try {
-    const {
-      clinicId,
-      patientName,
-      phone,
-      treatmentType,
-      startDate,
-      totalAmount,
-    } = req.body;
-
-    const newCase = await TreatmentCase.create({
-      clinicId,
-      patientName,
-      phone,
-      treatmentType,
-      startDate,
-      totalAmount,
-    });
-
-    res.json({ success: true, treatment: newCase });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to create treatment case",
-    });
-  }
-});
-
-
+/**
+ * UPDATE NEXT VISIT DATE
+ */
 router.put("/:id/next-visit", async (req, res) => {
   try {
     const updated = await TreatmentCase.findByIdAndUpdate(
@@ -108,6 +69,5 @@ router.put("/:id/next-visit", async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
-
 
 export default router;
