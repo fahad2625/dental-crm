@@ -11,6 +11,7 @@ import PatientDetails from "./Componets/Admin/PatientDetails.jsx";
 import Doctor from "./Componets/Doctors/DoctorsSection.jsx";
 import Service from "./Componets/Services/ServicesSection.jsx";
 import Location from"./Componets/Location/LocationSection.jsx";
+import Company from "./Componets/Company/Company.jsx";
 function App() {
   return (
     <>
@@ -23,7 +24,7 @@ function App() {
         <Route path="/services" element={<Service />} />
         <Route path="/location" element={<Location />} />
         <Route path="/admin" element={<Admin />} />
-        
+        <Route path="/company" element={<Company />} />
        <Route path="/admin/patients" element={<OngoingPatients />} />
        <Route path="/admin/patient/:caseId" element={<PatientDetails />} />
       </Routes>

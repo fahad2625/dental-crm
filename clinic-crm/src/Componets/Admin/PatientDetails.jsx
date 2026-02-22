@@ -187,10 +187,18 @@ const PatientDetails = () => {
 
       {/* PATIENT INFO */}
       <div className="bg-white border rounded p-4 space-y-2">
-        <p><b>Phone:</b> {patient.phone}</p>
-        <p><b>Treatment:</b> {patient.treatmentType}</p>
-        <p><b>Status:</b> {patient.status}</p>
-        <p><b>Start Date:</b> {new Date(patient.startDate).toLocaleDateString()}</p>
+        <p>
+          <b>Phone:</b> {patient.phone}
+        </p>
+        <p>
+          <b>Treatment:</b> {patient.treatmentType}
+        </p>
+        <p>
+          <b>Status:</b> {patient.status}
+        </p>
+        <p>
+          <b>Start Date:</b> {new Date(patient.startDate).toLocaleDateString()}
+        </p>
       </div>
 
       {/* NEXT VISIT */}
@@ -216,8 +224,12 @@ const PatientDetails = () => {
       {/* FINANCIAL SUMMARY */}
       <div className="bg-white border rounded p-4 mt-6">
         <h3 className="font-semibold mb-3">Financial Summary</h3>
-        <p><b>Total Treatment Amount:</b> ₹{totalAmount}</p>
-        <p><b>Total Paid:</b> ₹{totalPaid}</p>
+        <p>
+          <b>Total Treatment Amount:</b> ₹{totalAmount}
+        </p>
+        <p>
+          <b>Total Paid:</b> ₹{totalPaid}
+        </p>
         <p className="font-semibold">Pending Balance: ₹{pendingBalance}</p>
         <p className={`font-medium ${statusColor}`}>Status: {statusText}</p>
       </div>
@@ -269,7 +281,9 @@ const PatientDetails = () => {
             <tbody>
               {payments.map((p) => (
                 <tr key={p._id} className="border-t">
-                  <td className="p-2">{new Date(p.paidAt).toLocaleDateString()}</td>
+                  <td className="p-2">
+                    {new Date(p.paidAt).toLocaleDateString()}
+                  </td>
                   <td className="p-2">₹{p.amount}</td>
                   <td className="p-2">{p.method}</td>
                   <td className="p-2">
@@ -308,7 +322,10 @@ const PatientDetails = () => {
 
         <div className="space-y-3 mt-4">
           {visits.map((v) => (
-            <div key={v._id} className="border rounded p-3 flex justify-between">
+            <div
+              key={v._id}
+              className="border rounded p-3 flex justify-between"
+            >
               <div>
                 <p className="text-sm text-gray-500">
                   {new Date(v.visitDate).toLocaleDateString()}
@@ -354,9 +371,18 @@ const PatientDetails = () => {
             {patient.files.map((f, i) => (
               <div key={i} className="flex justify-between border p-2 rounded">
                 <span className="text-sm">{f.fileName || "File"}</span>
-                <a href={f.fileUrl} target="_blank" className="text-blue-600 text-sm">
-                  View
-                </a>
+       <a
+  href={
+    f.fileUrl?.startsWith("http")
+      ? f.fileUrl
+      : `${API}${f.fileUrl}`
+  }
+  target="_blank"
+  rel="noreferrer"
+  className="text-blue-600 text-sm"
+>
+  View
+</a>
               </div>
             ))}
           </div>

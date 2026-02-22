@@ -1,8 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
 import TreatmentCase from "../models/TreatmentCase.model.js";
+
+
 
 const router = express.Router();
 
@@ -11,7 +15,7 @@ const uploadDir = path.join(process.cwd(), "uploads");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
-}
+} 
 
 /* ---------- Multer storage ---------- */
 const storage = multer.diskStorage({
@@ -50,7 +54,7 @@ router.post("/treatment/:caseId", upload.single("file"), async (req, res) => {
     }
 
     treatment.files.push({
-      fileUrl: `/uploads/${req.file.filename}`,
+      fileUrl: `${process.env.BASE_URL}/uploads/${req.file.filename}`,
       fileType: req.file.mimetype,
       fileName: req.file.originalname,
     });
