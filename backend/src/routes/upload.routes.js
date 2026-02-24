@@ -11,11 +11,19 @@ import TreatmentCase from "../models/TreatmentCase.model.js";
 const router = express.Router();
 
 /* ---------- Ensure uploads folder exists ---------- */
-const uploadDir = path.join(process.cwd(), "uploads");
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Points to backend/uploads
+const uploadDir = path.join(__dirname, "../../uploads");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
-} 
+}  
+
 
 /* ---------- Multer storage ---------- */
 const storage = multer.diskStorage({
