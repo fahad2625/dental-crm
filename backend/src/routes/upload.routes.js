@@ -1,45 +1,32 @@
 import dotenv from "dotenv";
 dotenv.config();
+
 import express from "express";
 import multer from "multer";
-import fs from "fs";
-import path from "path";
+import cloudinary from "../config/cloudinary.js";
 import TreatmentCase from "../models/TreatmentCase.model.js";
-
-
 
 const router = express.Router();
 
-/* ---------- Ensure uploads folder exists ---------- */
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+/* ---------- Multer Memory Storage ---------- */
+const storage = multer.memoryStorage();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Points to backend/uploads
-const uploadDir = path.join(__dirname, "../../uploads");
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}  
-
-
-/* ---------- Multer storage ---------- */
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      cb(new Error("Only JPG and PNG images are allowed"));
+    } else {
+      cb(null, true);
+    }
   },
 });
-
-const upload = multer({ storage });
 
 /* ---------- Upload Route ---------- */
 router.post("/treatment/:caseId", upload.single("file"), async (req, res) => {
   try {
-    console.log("Upload request received");
-
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -56,21 +43,41 @@ router.post("/treatment/:caseId", upload.single("file"), async (req, res) => {
       });
     }
 
-    // ensure files array exists
+    // Upload to Cloudinary using buffer
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "treatment_xrays",
+          resource_type: "image",
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+
+      stream.end(req.file.buffer);
+    });
+
     if (!treatment.files) {
       treatment.files = [];
     }
 
     treatment.files.push({
-      fileUrl: `${process.env.BASE_URL}/uploads/${req.file.filename}`,
+      fileUrl: uploadResult.secure_url,
       fileType: req.file.mimetype,
       fileName: req.file.originalname,
+      publicId: uploadResult.public_id,
     });
 
     await treatment.save();
 
-    res.json({ success: true });
-
+    res.json({
+      success: true,
+      message: "File uploaded successfully",
+      treatment,
+    });
+console.log("Cloudinary result:", uploadResult.secure_url);
   } catch (err) {
     console.error("UPLOAD ERROR:", err);
     res.status(500).json({

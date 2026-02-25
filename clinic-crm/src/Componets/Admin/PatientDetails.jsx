@@ -31,6 +31,7 @@ const PatientDetails = () => {
   const fetchPatient = async () => {
     const res = await fetch(`${API}/treatment-cases/${caseId}`);
     const data = await res.json();
+    console.log(data);
 
     if (data.success) {
       setPatient(data.treatment);
@@ -144,6 +145,7 @@ const PatientDetails = () => {
       });
 
       const data = await res.json();
+      console.log(data);
 
       if (data.success) {
         alert("File uploaded successfully");
@@ -373,10 +375,10 @@ const PatientDetails = () => {
                 <span className="text-sm">{f.fileName || "File"}</span>
        <a
   href={
-    f.fileUrl?.startsWith("http")
-      ? f.fileUrl
-      : `${API}${f.fileUrl}`
-  }
+  f.fileUrl?.startsWith("http")
+    ? f.fileUrl
+    : `${API.replace(/\/$/, "")}${f.fileUrl}`
+}
   target="_blank"
   rel="noreferrer"
   className="text-blue-600 text-sm"
