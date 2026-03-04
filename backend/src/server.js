@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config(); // ⭐ MUST BE FIRST
+dotenv.config(); // MUST BE FIRST
 
 import express from "express";
 import path from "path";
@@ -21,6 +21,11 @@ connectDB();
 /* ---------- TEST ROUTE ---------- */
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
+});
+
+/* ---------- HEALTH ROUTE (for uptime monitoring) ---------- */
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
 });
 
 /* ---------- ROUTES ---------- */
