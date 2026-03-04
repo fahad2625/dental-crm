@@ -2,7 +2,7 @@ import express from "express";
 import Appointment from "../models/Appointment.model.js";
 import fetch from "node-fetch";
 
- const N8N_WEBHOOK = "https://ganglioid-karrie-hortatorily.ngrok-free.dev/webhook/dental-appointment";
+ const N8N_WEBHOOK = "https://n8n-fjnr.onrender.com/webhook/dental-appointment";
 // later change to production URL
 
 const router = express.Router();
