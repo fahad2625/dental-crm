@@ -5,8 +5,8 @@ const router = express.Router();
 
 
 
-const N8N_WEBHOOK = "https://ganglioid-karrie-hortatorily.ngrok-free.dev/webhook/dental-appointment";
-/**
+const N8N_WEBHOOK = "https://n8n-fjnr.onrender.com/webhook/dental-appointment";
+/**                 
  * CREATE TREATMENT CASE
  */
 router.post("/", async (req, res) => {
