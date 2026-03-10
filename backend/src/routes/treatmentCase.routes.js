@@ -79,7 +79,7 @@ router.put("/:id/next-visit", async (req, res) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          event: "treatment.nextVisit.updated",
+          type: "treatment.nextVisit.updated",
           clinicId: updated.clinicId,
           caseId: updated._id,
           patientName: updated.patientName,
