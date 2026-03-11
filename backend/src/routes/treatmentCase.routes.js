@@ -75,18 +75,17 @@ router.put("/:id/next-visit", async (req, res) => {
 
     // 🔥 Trigger n8n automation
     try {
-      await fetch(N8N_WEBHOOK, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "treatment.nextVisit.updated",
-          clinicId: updated.clinicId,
-          caseId: updated._id,
-          patientName: updated.patientName,
-          phone: "91" + updated.phone,
-          nextVisitDate: updated.nextVisitDate
-        }),
-      });
+    await fetch(N8N_WEBHOOK, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    user: updated.patientName,
+    phone: "91" + updated.phone,
+    clinic: updated.clinicId,
+    type: "next_visit_first",
+    nextVisitDate: updated.nextVisitDate
+  }),
+});
     } catch (err) {
       console.error("⚠️ n8n webhook failed:", err);
       // Don't break main flow
