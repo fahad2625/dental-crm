@@ -1,7 +1,7 @@
 import express from "express";
 import Appointment from "../models/Appointment.model.js";
 import fetch from "node-fetch";
-import { sendEmail } from "../services/emailService.js"; // ✅ email import
+import { sendEmail } from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -20,13 +20,12 @@ router.post("/", async (req, res) => {
     console.log("✅ Appointment saved to DB");
 
     // ==========================
-    // 🔥 EMAIL TRIGGER
+    // 📧 EMAIL (NEW APPOINTMENT)
     // ==========================
     console.log("🔥 EMAIL FUNCTION STARTING");
 
-    // 📧 Email to clinic (you)
     await sendEmail({
-      to: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER, // sandbox
       subject: "New Appointment Request",
       html: `
         <h3>New Appointment</h3>
@@ -39,34 +38,23 @@ router.post("/", async (req, res) => {
       `,
     });
 
-    // 📧 Email to patient (optional)
-    if (appointment.email) {
-      await sendEmail({
-        to: appointment.email,
-        subject: "Appointment Request Received",
-        html: `
-          <p>Hi ${appointment.name},</p>
-          <p>Your appointment request has been received.</p>
-          <p>We will contact you shortly.</p>
-        `,
-      });
-    }
-
     // ==========================
-    // 🔄 N8N WEBHOOK (non-blocking)
+    // 🔄 N8N (optional)
     // ==========================
+    /*
     fetch(N8N_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user: appointment.name,
         phone: "91" + appointment.phone,
-        clinic: appointment.clinicId, // ✅ fixed
+        clinic: appointment.clinicId,
         type: "appointment",
         date: appointment.date,
         time: appointment.time,
       }),
     }).catch((err) => console.log("n8n failed:", err.message));
+    */
 
     res.status(201).json({
       success: true,
@@ -110,7 +98,7 @@ router.get("/", async (req, res) => {
 });
 
 // ==========================
-// UPDATE STATUS
+// UPDATE STATUS (CONFIRM / CANCEL / RESCHEDULE)
 // ==========================
 router.patch("/:id/status", async (req, res) => {
   try {
@@ -131,19 +119,71 @@ router.patch("/:id/status", async (req, res) => {
 
     console.log("✅ Status updated:", status);
 
-    // 🔄 n8n webhook
+    // ==========================
+    // 📧 EMAIL TEMPLATE LOGIC
+    // ==========================
+    let subject = "";
+    let html = "";
+
+    if (status === "confirmed") {
+      subject = "Appointment Confirmed";
+      html = `
+        <p>Hi ${appointment.name},</p>
+        <p>Your appointment has been <b>confirmed</b>.</p>
+        <p><b>Date:</b> ${appointment.date}</p>
+        <p><b>Time:</b> ${appointment.time || "Not specified"}</p>
+      `;
+    }
+
+    if (status === "cancelled") {
+      subject = "Appointment Cancelled";
+      html = `
+        <p>Hi ${appointment.name},</p>
+        <p>Your appointment has been <b>cancelled</b>.</p>
+        <p>If this was a mistake, please contact us.</p>
+      `;
+    }
+
+    if (status === "rescheduled") {
+      subject = "Appointment Rescheduled";
+      html = `
+        <p>Hi ${appointment.name},</p>
+        <p>Your appointment has been <b>rescheduled</b>.</p>
+        <p><b>New Date:</b> ${appointment.date}</p>
+        <p><b>New Time:</b> ${appointment.time || "Not specified"}</p>
+      `;
+    }
+
+    // ==========================
+    // 📧 SEND EMAIL
+    // ==========================
+    if (subject && html) {
+      console.log("🔥 STATUS EMAIL TRIGGER");
+
+      await sendEmail({
+        to: process.env.EMAIL_USER, // sandbox
+        subject,
+        html,
+      });
+    }
+
+    // ==========================
+    // 🔄 N8N (optional)
+    // ==========================
+    /*
     fetch(N8N_WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user: appointment.name,
         phone: "91" + appointment.phone,
-        clinic: appointment.clinicId, // ✅ fixed
+        clinic: appointment.clinicId,
         type: status,
         date: appointment.date,
         time: appointment.time,
       }),
     }).catch((err) => console.log("n8n failed:", err.message));
+    */
 
     res.json({
       success: true,
