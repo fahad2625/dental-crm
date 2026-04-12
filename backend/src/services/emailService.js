@@ -7,15 +7,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
+    const response = await resend.emails.send({
+      from: "Dental CRM <onboarding@resend.dev>",
       to,
       subject,
       html,
     });
 
-    console.log("✅ Email sent via Resend");
+    console.log("📧 RESEND RESPONSE:", response);
+
   } catch (error) {
-    console.error("Email error:", error);
+    console.error("❌ Email error:", error);
   }
 };
