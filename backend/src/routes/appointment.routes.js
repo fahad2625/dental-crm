@@ -139,24 +139,30 @@ router.patch("/:id/status", async (req, res) => {
       `;
     }
 
-    if (status === "cancelled") {
-      subject = "Appointment Cancelled";
-      html = `
-        <p>Hi ${appointment.name},</p>
-        <p>Your appointment has been <b>cancelled</b>.</p>
-        <p>If this was a mistake, please contact us.</p>
-      `;
-    }
+if (status === "cancelled") {
+  subject = "Appointment Cancelled";
+  html = `
+    <div style="font-family: Arial; padding: 20px;">
+      <h2 style="color: #e53935;">Appointment Cancelled</h2>
+      <p>Hi ${appointment.name},</p>
+      <p>Your appointment has been cancelled.</p>
+    </div>
+  `;
+}
 
-    if (status === "rescheduled") {
-      subject = "Appointment Rescheduled";
-      html = `
-        <p>Hi ${appointment.name},</p>
-        <p>Your appointment has been <b>rescheduled</b>.</p>
-        <p><b>New Date:</b> ${appointment.date}</p>
-        <p><b>New Time:</b> ${appointment.time || "Not specified"}</p>
-      `;
-    }
+if (status === "rescheduled") {
+  subject = "Appointment Rescheduled";
+  html = `
+    <div style="font-family: Arial; padding: 20px;">
+      <h2 style="color: #1e88e5;">Appointment Rescheduled</h2>
+      <p>Hi ${appointment.name},</p>
+      <p>Your appointment has been rescheduled.</p>
+      <hr/>
+      <p><b>New Date:</b> ${appointment.date}</p>
+      <p><b>New Time:</b> ${appointment.time}</p>
+    </div>
+  `;
+}
 
     // ==========================
     // 📧 SEND EMAIL
