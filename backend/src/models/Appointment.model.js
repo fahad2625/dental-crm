@@ -19,6 +19,14 @@ const appointmentSchema = new mongoose.Schema(
       required: true,
     },
 
+email: {
+  type: String,
+  default: null,
+  trim: true,
+  lowercase: true,
+  match: [/\S+@\S+\.\S+/, "Invalid email"],
+},
+
     date: {
       type: String,
       required: true,

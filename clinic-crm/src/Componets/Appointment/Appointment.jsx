@@ -7,6 +7,7 @@ const Appointment = () => {
     date: "",
     time: "",
     message: "",
+    email: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -36,6 +37,10 @@ const Appointment = () => {
       newErrors.date = "Preferred date is required";
     }
 
+    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+  newErrors.email = "Enter a valid email";
+}
+
     return newErrors;
   };
 
@@ -47,8 +52,7 @@ const Appointment = () => {
 
   if (Object.keys(validationErrors).length === 0) {
     try {
-      await fetch(`https://dental-crm-backend-8crf.onrender.com
-/appointments`, {
+await fetch("https://dental-crm-backend-8crf.onrender.com/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -63,6 +67,7 @@ const Appointment = () => {
         date: "",
         time: "",
         message: "",
+        email: "",
       });
     } catch (error) {
       console.error("Failed to submit appointment", error);
@@ -127,6 +132,20 @@ const Appointment = () => {
               <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
             )}
           </div>
+          {/* Email */}
+<div>
+  <label className="block text-sm font-medium text-gray-700">
+    Email (optional)
+  </label>
+  <input
+    type="email"
+    name="email"
+    value={formData.email}
+    onChange={handleChange}
+    className="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+    placeholder="For confirmation & reminders"
+  />
+</div>
 
           {/* Date */}
           <div>
