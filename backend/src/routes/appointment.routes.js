@@ -128,10 +128,14 @@ router.patch("/:id/status", async (req, res) => {
     if (status === "confirmed") {
       subject = "Appointment Confirmed";
       html = `
-        <p>Hi ${appointment.name},</p>
-        <p>Your appointment has been <b>confirmed</b>.</p>
-        <p><b>Date:</b> ${appointment.date}</p>
-        <p><b>Time:</b> ${appointment.time || "Not specified"}</p>
+       <div style="font-family: Arial; padding: 20px;">
+  <h2 style="color: #4CAF50;">Appointment Confirmed</h2>
+  <p>Hi Fahad,</p>
+  <p>Your appointment has been confirmed.</p>
+  <hr/>
+  <p><b>Date:</b> 12 April</p>
+  <p><b>Time:</b> 10:30 AM</p>
+</div>
       `;
     }
 
