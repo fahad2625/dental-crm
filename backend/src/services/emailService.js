@@ -1,25 +1,21 @@
-import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // IMPORTANT
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    await transporter.sendMail({
-      from: `"Dental CRM" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
       to,
       subject,
       html,
     });
-    console.log("Email sent");
-  } catch (err) {
-    console.log("Email error:", err);
+
+    console.log("✅ Email sent via Resend");
+  } catch (error) {
+    console.error("Email error:", error);
   }
 };
